@@ -17,6 +17,8 @@ class Language(str, Enum):
     KOTLIN = "kotlin"
     TYPESCRIPT = "typescript"
     JAVASCRIPT = "javascript"
+    JAVASCRIPT_REACT = "javascriptreact"
+    TYPESCRIPT_REACT = "typescriptreact"
     GO = "go"
     RUBY = "ruby"
     DART = "dart"
