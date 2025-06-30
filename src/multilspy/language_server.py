@@ -101,7 +101,12 @@ class LanguageServer:
             from multilspy.language_servers.omnisharp.omnisharp import OmniSharp
 
             return OmniSharp(config, logger, repository_root_path)
-        elif config.code_language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
+        elif config.code_language in [
+                Language.TYPESCRIPT,
+                Language.JAVASCRIPT,
+                Language.JAVASCRIPT_REACT,
+                Language.TYPESCRIPT_REACT
+        ]:
             from multilspy.language_servers.typescript_language_server.typescript_language_server import (
                 TypeScriptLanguageServer,
             )
@@ -229,11 +234,17 @@ class LanguageServer:
             version = 0
             self.open_file_buffers[uri] = LSPFileBuffer(uri, contents, version, self.language_id, 1)
 
+            language_id = (
+                self.language_id
+                if isinstance(self.language_id, str)
+                else self.language_id(relative_file_path)
+            )
+
             self.server.notify.did_open_text_document(
                 {
                     LSPConstants.TEXT_DOCUMENT: {
                         LSPConstants.URI: uri,
-                        LSPConstants.LANGUAGE_ID: self.language_id,
+                        LSPConstants.LANGUAGE_ID: language_id,
                         LSPConstants.VERSION: 0,
                         LSPConstants.TEXT: contents,
                     }

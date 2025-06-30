@@ -4,21 +4,21 @@ Provides TypeScript specific instantiation of the LanguageServer class. Contains
 
 import asyncio
 import json
-import shutil
 import logging
 import os
-import subprocess
 import pathlib
+import shutil
+import subprocess
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncIterator
 
-from multilspy.multilspy_logger import MultilspyLogger
 from multilspy.language_server import LanguageServer
-from multilspy.lsp_protocol_handler.server import ProcessLaunchInfo
 from multilspy.lsp_protocol_handler.lsp_types import InitializeParams
-from multilspy.multilspy_config import MultilspyConfig
-from multilspy.multilspy_utils import PlatformUtils, PlatformId
-
+from multilspy.lsp_protocol_handler.server import ProcessLaunchInfo
+from multilspy.multilspy_config import Language, MultilspyConfig
+from multilspy.multilspy_logger import MultilspyLogger
+from multilspy.multilspy_utils import PlatformId, PlatformUtils
 
 # Conditionally import pwd module (Unix-only)
 if not PlatformUtils.get_platform_id().value.startswith("win"):
@@ -30,6 +30,13 @@ class TypeScriptLanguageServer(LanguageServer):
     Provides TypeScript specific instantiation of the LanguageServer class. Contains various configurations and settings specific to TypeScript.
     """
 
+    LANGUAGE_ID_MAP = {
+        ".js": Language.JAVASCRIPT,
+        ".ts": Language.TYPESCRIPT,
+        ".jsx": Language.JAVASCRIPT_REACT,
+        ".tsx": Language.TYPESCRIPT_REACT,
+    }
+
     def __init__(self, config: MultilspyConfig, logger: MultilspyLogger, repository_root_path: str):
         """
         Creates a TypeScriptLanguageServer instance. This class is not meant to be instantiated directly. Use LanguageServer.create() instead.
@@ -40,7 +47,7 @@ class TypeScriptLanguageServer(LanguageServer):
             logger,
             repository_root_path,
             ProcessLaunchInfo(cmd=ts_lsp_executable_path, cwd=repository_root_path),
-            "typescript",
+            language_id=lambda file: self.LANGUAGE_ID_MAP[Path(file).suffix],
         )
         self.server_ready = asyncio.Event()
 
