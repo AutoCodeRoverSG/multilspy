@@ -47,7 +47,7 @@ class TypeScriptLanguageServer(LanguageServer):
             logger,
             repository_root_path,
             ProcessLaunchInfo(cmd=ts_lsp_executable_path, cwd=repository_root_path),
-            language_id=lambda file: self.LANGUAGE_ID_MAP[Path(file).suffix],
+            language_id=lambda file: self.LANGUAGE_ID_MAP[Path(file).suffix] if Path(file).suffix in self.LANGUAGE_ID_MAP else "UNKNOWN",
         )
         self.server_ready = asyncio.Event()
 
