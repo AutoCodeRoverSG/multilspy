@@ -4,12 +4,12 @@
     {
       "id": "typescript",
       "description": "typescript package for Linux, OSX, and Windows. Both x64 and arm64 are supported.",
-      "command": "npm install --prefix ./ typescript@5.5.4"
+      "command": "npm install --ignore-scripts --prefix ./ typescript@5.5.4"
     },
     {
       "id": "typescript-language-server",
       "description": "typescript-language-server package for Linux, OSX, and Windows. Both x64 and arm64 are supported.",
-      "command": "npm install --prefix ./ typescript-language-server@4.3.3"
+      "command": "npm install --ignore-scripts --prefix ./ typescript-language-server@4.3.3"
     }
   ]
 }
