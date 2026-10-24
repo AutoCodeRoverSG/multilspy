@@ -62,7 +62,9 @@ class RustAnalyzer(LanguageServer):
         dependency = runtime_dependencies[0]
 
         rustanalyzer_ls_dir = os.path.join(os.path.dirname(__file__), "static", "RustAnalyzer")
-        rustanalyzer_executable_path = os.path.join(rustanalyzer_ls_dir, dependency["binaryName"])
+        rustanalyzer_executable_path = os.path.realpath(os.path.join(rustanalyzer_ls_dir, dependency["binaryName"]))
+        if not rustanalyzer_executable_path.startswith(os.path.realpath(rustanalyzer_ls_dir) + os.sep):
+            raise ValueError("Invalid binaryName in runtime dependencies: path escapes the RustAnalyzer directory")
         if not os.path.exists(rustanalyzer_ls_dir):
             os.makedirs(rustanalyzer_ls_dir)
             if dependency["archiveType"] == "gz":

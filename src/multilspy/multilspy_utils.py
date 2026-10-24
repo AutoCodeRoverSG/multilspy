@@ -161,7 +161,11 @@ class FileUtils:
                     shutil.copyfileobj(f_in, f_out)
                 shutil.unpack_archive(tmp_file_name_ungzipped, target_path, "zip")
             elif archive_type == "gz":
-                with gzip.open(tmp_file_name, "rb") as f_in, open(target_path, "wb") as f_out:
+                base_dir = os.path.realpath(os.path.dirname(__file__))
+                target_file_path = os.path.realpath(target_path)
+                if not target_file_path.startswith(base_dir + os.sep):
+                    raise MultilspyException(f"Invalid extraction target path '{target_path}'")
+                with gzip.open(tmp_file_name, "rb") as f_in, open(target_file_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
             else:
                 logger.log(f"Unknown archive type '{archive_type}' for extraction", logging.ERROR)

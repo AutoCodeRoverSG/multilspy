@@ -82,8 +82,14 @@ class KotlinLanguageServer(LanguageServer):
         java_dir = os.path.join(static_dir, "java")
         os.makedirs(java_dir, exist_ok=True)
         
-        java_home_path = os.path.join(java_dir, java_dependency["java_home_path"])
-        java_path = os.path.join(java_dir, java_dependency["java_path"])
+        # Ensure the Java paths stay within the expected Java directory
+        java_dir_abs = os.path.abspath(java_dir)
+        java_home_path = os.path.abspath(os.path.join(java_dir_abs, java_dependency["java_home_path"]))
+        if not java_home_path.startswith(java_dir_abs + os.sep):
+            raise ValueError(f"Invalid Java home path outside of {java_dir_abs}: {java_home_path}")
+        java_path = os.path.abspath(os.path.join(java_dir_abs, java_dependency["java_path"]))
+        if not java_path.startswith(java_dir_abs + os.sep):
+            raise ValueError(f"Invalid Java executable path outside of {java_dir_abs}: {java_path}")
         
         # Download and extract Java if not exists
         if not os.path.exists(java_path):

@@ -174,12 +174,15 @@ class EclipseJDTLS(LanguageServer):
         assert os.path.exists(gradle_path)
 
         dependency = runtimeDependencies["vscode-java"][platformId.value]
-        vscode_java_path = str(
-            PurePath(os.path.abspath(os.path.dirname(__file__)), "static", dependency["relative_extraction_path"])
-        )
+        static_dir = os.path.realpath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "static"))
+        vscode_java_path = os.path.realpath(os.path.join(static_dir, dependency["relative_extraction_path"]))
+        if not vscode_java_path.startswith(static_dir + os.sep):
+            raise ValueError("Invalid relative_extraction_path for vscode-java: path escapes the static directory")
         os.makedirs(vscode_java_path, exist_ok=True)
         jre_home_path = str(PurePath(vscode_java_path, dependency["jre_home_path"]))
-        jre_path = str(PurePath(vscode_java_path, dependency["jre_path"]))
+        jre_path = os.path.realpath(os.path.join(vscode_java_path, dependency["jre_path"]))
+        if not jre_path.startswith(vscode_java_path + os.sep):
+            raise ValueError("Invalid jre_path for vscode-java: path escapes the extraction directory")
         lombok_jar_path = str(PurePath(vscode_java_path, dependency["lombok_jar_path"]))
         jdtls_launcher_jar_path = str(PurePath(vscode_java_path, dependency["jdtls_launcher_jar_path"]))
         jdtls_readonly_config_path = str(PurePath(vscode_java_path, dependency["jdtls_readonly_config_path"]))
