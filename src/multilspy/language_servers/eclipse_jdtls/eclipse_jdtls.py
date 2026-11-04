@@ -139,6 +139,20 @@ class EclipseJDTLS(LanguageServer):
 
         super().__init__(config, logger, repository_root_path, ProcessLaunchInfo(cmd, proc_env, proc_cwd), "java")
 
+    @staticmethod
+    def _safe_join(base_directory: str, *parts: str) -> str:
+        """
+        Joins the given path parts to the base directory and ensures that the resulting
+        canonical path stays within the base directory.
+        """
+        base_path = pathlib.Path(base_directory).resolve()
+        canonical_path = pathlib.Path(base_path, *parts).resolve()
+        try:
+            canonical_path.relative_to(base_path)
+        except ValueError:
+            raise ValueError(f"Path {canonical_path} is outside of the directory {base_path}")
+        return str(canonical_path)
+
     def setupRuntimeDependencies(self, logger: MultilspyLogger, config: MultilspyConfig) -> RuntimeDependencyPaths:
         """
         Setup runtime dependencies for EclipseJDTLS.
@@ -174,15 +188,14 @@ class EclipseJDTLS(LanguageServer):
         assert os.path.exists(gradle_path)
 
         dependency = runtimeDependencies["vscode-java"][platformId.value]
-        vscode_java_path = str(
-            PurePath(os.path.abspath(os.path.dirname(__file__)), "static", dependency["relative_extraction_path"])
-        )
+        static_directory_path = str(PurePath(os.path.abspath(os.path.dirname(__file__)), "static"))
+        vscode_java_path = self._safe_join(static_directory_path, dependency["relative_extraction_path"])
         os.makedirs(vscode_java_path, exist_ok=True)
-        jre_home_path = str(PurePath(vscode_java_path, dependency["jre_home_path"]))
-        jre_path = str(PurePath(vscode_java_path, dependency["jre_path"]))
-        lombok_jar_path = str(PurePath(vscode_java_path, dependency["lombok_jar_path"]))
-        jdtls_launcher_jar_path = str(PurePath(vscode_java_path, dependency["jdtls_launcher_jar_path"]))
-        jdtls_readonly_config_path = str(PurePath(vscode_java_path, dependency["jdtls_readonly_config_path"]))
+        jre_home_path = self._safe_join(vscode_java_path, dependency["jre_home_path"])
+        jre_path = self._safe_join(vscode_java_path, dependency["jre_path"])
+        lombok_jar_path = self._safe_join(vscode_java_path, dependency["lombok_jar_path"])
+        jdtls_launcher_jar_path = self._safe_join(vscode_java_path, dependency["jdtls_launcher_jar_path"])
+        jdtls_readonly_config_path = self._safe_join(vscode_java_path, dependency["jdtls_readonly_config_path"])
         if not all(
             [
                 os.path.exists(vscode_java_path),
@@ -207,12 +220,10 @@ class EclipseJDTLS(LanguageServer):
         assert os.path.exists(jdtls_readonly_config_path)
 
         dependency = runtimeDependencies["intellicode"]["platform-agnostic"]
-        intellicode_directory_path = str(
-            PurePath(os.path.abspath(os.path.dirname(__file__)), "static", dependency["relative_extraction_path"])
-        )
+        intellicode_directory_path = self._safe_join(static_directory_path, dependency["relative_extraction_path"])
         os.makedirs(intellicode_directory_path, exist_ok=True)
-        intellicode_jar_path = str(PurePath(intellicode_directory_path, dependency["intellicode_jar_path"]))
-        intellisense_members_path = str(PurePath(intellicode_directory_path, dependency["intellisense_members_path"]))
+        intellicode_jar_path = self._safe_join(intellicode_directory_path, dependency["intellicode_jar_path"])
+        intellisense_members_path = self._safe_join(intellicode_directory_path, dependency["intellisense_members_path"])
         if not all(
             [
                 os.path.exists(intellicode_directory_path),
